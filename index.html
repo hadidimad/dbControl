@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>angular test</title>
+    <link href="./css/bootstrap.min.css" rel="stylesheet" />
+    <link href="./css/w3.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div ng-app="navbarApp" ng-controller="navbarController"> 
+        <nav class="w3-sidenav w3-collapse w3-blue w3-animate-left" style="width:200px;">
+            <a href="#" onclick="w3_close()" class="w3-closenav w3-hide-large">
+                <h4>Close
+                    <div style="float:right;">x</div>
+                </h4>
+            </a>
+            <a>
+                <h3><span class="glyphicon glyphicon-calendar"></span>tables <span class="w3-tag w3-red w3-round w3-right">3</span></h3>
+            </a>
+            <a href="#">table 1</a>
+            <a href="#">table 2</a>
+            <a href="#">table 3</a>
+        </nav>
+        <div class="w3-main w3-animate-right" style="margin-left:200px">
+            <nav class="navbar w3-blue">
+                <div class="container-fluid">
+                    <div class="navbar-header">
+                        <a class="navbar-brand"><span class="w3-opennav w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</span> TableName</a>
+                    </div>
+                    <ul class="nav navbar-nav">
+                        <li class="active"><a href="#">content</a></li>
+                        <li><a href="#">run SQL</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+        <div class="w3-responsive" ng-app="tableApp" ng-controller="TableController">
+            <table class="w3-table w3-bordered w3-striped w3-hoverable">
+                <tr class="w3-blue">
+                    <th>Columns</th>
+                    <th ng-repeat="x in columns">
+                        {{x}}
+                    </th>
+
+                </tr>
+                <tr>
+                    <td>Filters</td>
+                    <td ng-repeat="x in columns"><input type="text" class="form-control"></td>
+                </tr>
+                <tr ng-repeat="i in table">
+                    <td ng-if="$index < colSize"><button type="button" class="btn btn-success btn-block"><span class="glyphicon glyphicon-pencil"></span>Edit</button></td>
+                    <td ng-repeat="x in i">{{x}}</td>
+                </tr>
+            </table>
+
+        </div>
+    </div>
+</body>
+<script src="./js/script.js"></script>
+<script src="./js/jquery-3.2.1.min.js"></script>
+<script src="./js/bootstrap.min.js"></script>
+<script src="./js/angular.min.js"></script>
+<script>
+    var app = angular.module("tableApp", []);
+    app.controller("TableController", function ($scope) {
+        test = {}
+        test.id = 2;
+        test.name = "hadi";
+        test.email = "test@mail.com";
+        test.time = 12
+        test.value = "hello"
+        var table = {}
+        var res = [test, test, test]
+        for (var i = 0; i < Object.keys(res[0]).length - 1; i++) {
+            var arr = $.map(res[i], function (value, index) {
+                return [value];
+            })
+            table[i] = arr
+        }
+        $scope.columns = Object.keys(res[0])
+        $scope.colSize = Object.keys(res).length
+        $scope.table = table
+        $scope.hadi = "hadi"
+    });
+
+    var app = angular.module("navbarApp", [])
+    app.controller("navbarController", function ($scope) {
+        var tables = ["table1", "table2", "table3"]
+        $scope.tables = tables
+    })
+
+</script>
+
+</html>
