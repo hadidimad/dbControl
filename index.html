@@ -33,7 +33,7 @@
                 </ul>
             </div>
         </nav>
-        <div class="w3-responsive" ng-app="tableApp" ng-controller="TableController">
+        <div class="w3-responsive" ng-app="tableApp" ng-controller="TableController" id="main-table" onkeyup="filterValues()">
             <table class="w3-table w3-bordered w3-striped w3-hoverable">
                 <tr class="w3-blue">
                     <th>Columns</th>
@@ -44,7 +44,7 @@
                 </tr>
                 <tr>
                     <td>Filters</td>
-                    <td ng-repeat="x in columns" style="min-width:70px"><input type="text" class="form-control"></td>
+                    <td ng-repeat="x in columns" style="min-width:70px"><input id='{{x + "input"}}' type="text" class="form-control"></td>
                 </tr>
                 <tr ng-repeat="i in table">
                     <td ng-if="$index < colSize"><button type="button" class="btn btn-success btn-block"><span class="glyphicon glyphicon-pencil"></span>Edit</button></td>
@@ -60,6 +60,7 @@
 <script src="./js/angular.min.js"></script>
 <script>
     var app = angular.module("tableApp", []);
+    var Objects = {};
     app.controller("TableController", function ($scope) {
         test = {}
         test.id = 2;
@@ -67,19 +68,58 @@
         test.email = "test@mail.com";
         test.time = 12
         test.value = "hello"
+        test2 = {}
+        test2.id = 5;
+        test2.name = "amir";
+        test2.email = "test2@mail.com";
+        test2.time = 23
+        test2.value = "tst"
         var table = {}
-        var res = [test, test, test]
+        var res = [test, test, test, test2]
         for (var i = 0; i < Object.keys(res[0]).length - 1; i++) {
             var arr = $.map(res[i], function (value, index) {
                 return [value];
             })
             table[i] = arr
         }
+        Objects = Object.keys(res[0])
         $scope.columns = Object.keys(res[0])
         $scope.colSize = Object.keys(res).length
         $scope.table = table
         $scope.hadi = "hadi"
     });
+
+    function filterValues() {
+        var input, table, tr, td, i;
+        var filter = {};
+        console.log(Objects)
+        for (i = 0; i < Objects.length; i++) {
+            input = document.getElementById(Objects[i] + "input");
+            filter[i] = input.value.toUpperCase();
+            filter[i] = filter[i].toString()
+        }
+        table = document.getElementById("main-table");
+        tr = table.getElementsByTagName("tr");
+        for (i = 2; i < tr.length; i++) {
+            for (var j = 0; j < Objects.length + 1; j++) {
+                td = tr[i].getElementsByTagName("td")[j];
+                if (td) {
+                    tr[i].style.display = ""
+                }
+            }
+        }
+        for (i = 2; i < tr.length; i++) {
+            for (var j = 0; j < Objects.length; j++) {
+                td = tr[i].getElementsByTagName("td")[j + 1];
+                if (td) {
+                    if (td.innerHTML.toUpperCase().indexOf(filter[j]) > -1) {
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+    }
 
 </script>
 
