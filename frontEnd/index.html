@@ -17,7 +17,7 @@
         <a>
             <h3><span class="glyphicon glyphicon-calendar"></span>tables <span class="w3-tag w3-red w3-round w3-right">{{numTables}}</span></h3>
         </a>
-        <a ng-repeat="i in tables" href="">{{i.name}}</a>
+        <a ng-repeat="i in tables" ng-click="loadTable(i.Name)">{{i.Name}}<span class="w3-tag w3-red w3-round w3-right">{{i.Nums}}</span></a>
     </nav>
     <div class="w3-main w3-animate-right" style="margin-left:200px">
         <nav class="navbar w3-blue">
@@ -58,45 +58,43 @@
 <script src="./js/angular.min.js"></script>
 <script>
     var app = angular.module("tableApp", []);
+    app.config(['$qProvider', function ($qProvider) {
+        $qProvider.errorOnUnhandledRejections(false);
+    }]);
+
     var Objects = {};
-    var choseTable=""
-    app.controller("TableController", function ($scope) {
-        test = {}
-        test.id = 2;
-        test.name = "hadi";
-        test.email = "test@mail.com";
-        test.time = 12
-        test.value = "hello"
-        test2 = {}
-        test2.id = 5;
-        test2.name = "amir";
-        test2.email = "test2@mail.com";
-        test2.time = 23
-        test2.value = "tst"
-        var table = {}
-        var res = [test, test, test, test2]
-        for (var i = 0; i < Object.keys(res[0]).length - 1; i++) {
-            var arr = $.map(res[i], function (value, index) {
-                return [value];
+    var choseTable = ""
+    app.controller("TableController", function ($scope, $http) {
+        $scope.loadTable = function (name) {
+            console.log("tesfunc", name)
+            $http.get("http://localhost:8080/tables/" + name).then(function successCallback(response) {
+                var table = {}
+                console.log(response.data)
+                var res = response.data
+                for (var i = 0; i < res.length; i++) {
+                    var arr = $.map(res[i], function (value, index) {
+                        return [value];
+                    })
+                    table[i] = arr
+                }
+                console.log(table, "table")
+                Objects = Object.keys(res[0])
+                $scope.columns = Object.keys(res[0])
+                $scope.colSize = Object.keys(res).length
+                console.log(Object.keys(res).length)
+                $scope.table = table
+
             })
-            table[i] = arr
         }
-        Objects = Object.keys(res[0])
-        $scope.columns = Object.keys(res[0])
-        $scope.colSize = Object.keys(res).length
-        $scope.table = table
-         function Table(name, recs) {
-            this.name = name
-            this.recs = recs
-        }
-        var tables = Array(3)
-        tables[0] = new Table("table 1")
-        tables[1] = new Table("table 2")
-        tables[2] = new Table("table 3")
-        choseTable=tables[0].name
-        $scope.choseTable=choseTable
-        $scope.tables = tables
-        $scope.numTables = tables.length
+        $http.get("http://localhost:8080/tables").then(function successCallback(response) {
+            //console.log(response.data)
+            var tables = response.data
+            choseTable = tables[0].Name
+            $scope.choseTable = choseTable
+            $scope.tables = tables
+            $scope.numTables = tables.length
+        });
+
     });
 
     function filterValues() {
@@ -110,6 +108,7 @@
         }
         table = document.getElementById("main-table");
         tr = table.getElementsByTagName("tr");
+        console.log(tr.length, "trs")
         for (i = 2; i < tr.length; i++) {
             for (var j = 0; j < Objects.length + 1; j++) {
                 td = tr[i].getElementsByTagName("td")[j];
