@@ -22,13 +22,7 @@
     <div class="w3-main w3-animate-right" style="margin-left:200px">
         <nav class="navbar w3-blue">
             <div class="container-fluid">
-                <div class="navbar-header">
-                    <a class="navbar-brand"><span class="w3-opennav w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</span>{{choseTable}}</a>
-                </div>
-                <ul class="nav navbar-nav">
-                    <li class="active"><a href="#">content</a></li>
-                    <li><a href="#">run SQL</a></li>
-                </ul>
+                <h1>{{choseTable}}</h1>
             </div>
         </nav>
         <div class="w3-responsive" id="main-table" onkeyup="filterValues()">
@@ -44,8 +38,11 @@
                     <td>Filters</td>
                     <td ng-repeat="x in columns" style="min-width:70px"><input id='{{x + "input"}}' type="text" class="form-control"></td>
                 </tr>
+                <tr ng-if="choseTable == '' " class="text-center">
+                    <td>please chose table from side bar</td>
+                </tr>
                 <tr ng-repeat="i in table">
-                    <td ng-if="$index < colSize"><button type="button" class="btn btn-success btn-block"><span class="glyphicon glyphicon-pencil"></span>Edit</button></td>
+                    <td ng-if="$index < colSize"><button type="button" class="btn btn-danger btn-block"><span class="glyphicon glyphicon-trash"></span>Delete</button></td>
                     <td ng-repeat="x in i">{{x}}</td>
                 </tr>
             </table>
@@ -64,6 +61,7 @@
 
     var Objects = {};
     var choseTable = ""
+    var ChoseObject = {}
     app.controller("TableController", function ($scope, $http) {
         $scope.loadTable = function (name) {
             console.log("tesfunc", name)
@@ -83,16 +81,32 @@
                 $scope.colSize = Object.keys(res).length
                 console.log(Object.keys(res).length)
                 $scope.table = table
+                choseTable = name
+                $scope.choseTable = choseTable
 
             })
+        }
+        $scope.DeleteRow = function (index) {
+            if (choseTable != "") {
+                var obj=$scope.table[index]
+                var id;
+                for(var i=0;i<Objects.length;i++){
+                    if(Objects[i] == "id"){
+                        id=obj[i]
+                        break;
+                    }
+                }
+                $http.delete("http://localhost:8080/delete/" + $scope.choseTable + "/" +id).success(data, status){
+
+                }
+            }
         }
         $http.get("http://localhost:8080/tables").then(function successCallback(response) {
             //console.log(response.data)
             var tables = response.data
-            choseTable = tables[0].Name
-            $scope.choseTable = choseTable
             $scope.tables = tables
             $scope.numTables = tables.length
+            $scope.choseTable = choseTable
         });
 
     });

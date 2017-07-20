@@ -22,9 +22,10 @@ type user struct {
 	Work     string
 }
 type tool struct {
-	ID   int
-	Name string
-	Work string
+	ID     int
+	Name   string
+	Ussage string
+	Owner  string
 }
 type table struct {
 	Name string
@@ -112,17 +113,21 @@ func GetTableContextTools(w http.ResponseWriter, r *http.Request) {
 	var tools []tool
 	for rows.Next() {
 		var Ttool tool
-		rows.Scan(&Ttool.ID, &Ttool.Name, &Ttool.Work)
+		rows.Scan(&Ttool.ID, &Ttool.Name, &Ttool.Ussage, &Ttool.Owner)
 		tools = append(tools, Ttool)
 	}
 	JSONval, err := json.Marshal(tools)
 	fmt.Fprint(w, string(JSONval))
 }
+
+func DeleteUsersHandler(w http.ResponseWriter, r *http.Request) {
+
+}
 func main() {
 	router := mux.NewRouter()
-
 	router.Methods("GET").Path("/tables").HandlerFunc(GetTables)
 	router.Methods("GET").Path("/tables/users").HandlerFunc(GetTableContextUsers)
 	router.Methods("GET").Path("/tables/tools").HandlerFunc(GetTableContextTools)
+	router.Methods("DELETE").Path("/delete/users/{id}").HandlerFunc(DeleteUsersHandler)
 	http.ListenAndServe(":8080", router)
 }
