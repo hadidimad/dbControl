@@ -5,6 +5,7 @@
     <title>angular test</title>
     <link href="./css/bootstrap.min.css" rel="stylesheet" />
     <link href="./css/w3.css" rel="stylesheet" />
+    <link href="./css/style.css" rel="stylesheet" />
 </head>
 
 <body ng-app="tableApp" ng-controller="TableController">
@@ -22,10 +23,17 @@
     <div class="w3-main w3-animate-right" style="margin-left:200px">
         <nav class="navbar w3-blue">
             <div class="container-fluid">
-                <h1>{{choseTable}}</h1>
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#" onclick="w3_open()"><span class="w3-opennav w3-xlarge w3-hide-large" onclick="w3_open()">&#9776;</span>{{choseTable}}</a>
+
+                </div>
+                <ul class="nav navbar-nav">
+                    <li><a href="#" onclick="openPage('main-table')" ng-click="loadTable(choseTable);">table</a></li>
+                    <li><a href="#" onclick="openPage('objectEdit')">object</a></li>
+                </ul>
             </div>
         </nav>
-        <div class="w3-responsive" id="main-table" onkeyup="filterValues()">
+        <div class="w3-responsive page" id="main-table" onkeyup="filterValues()">
             <table class="w3-table w3-bordered w3-striped w3-hoverable">
                 <tr class="w3-blue">
                     <th>Columns</th>
@@ -42,17 +50,37 @@
                     <td>please chose table from side bar</td>
                 </tr>
                 <tr ng-repeat="i in table">
-                    <td ng-if="$index < colSize"><button type="button" class="btn btn-danger btn-block"><span class="glyphicon glyphicon-trash"></span>Delete</button></td>
+                    <td ng-if="$index < colSize"><button type="button" class="btn btn-success btn-block" ng-click="setObject($index)"><span class="glyphicon glyphicon-pencil"></span>Edit</button></td>
                     <td ng-repeat="x in i">{{x}}</td>
                 </tr>
             </table>
         </div>
-    </div>
+        <div class="page" id="objectEdit" style="display:none;">
+            <table class="w3-table w3-bordered w3-striped w3-hoverable">
+                <tr class="w3-blue">
+                    <th>propety</th>
+                    <th>value</th>
+                </tr>
+                <form id="updateObj">
+                    <tr ng-repeat="i in choseObject">
+                        <td>{{columns[$index]}}</td>
+                        <td><input id="{{columns[$index]+'update'}}" type="text" class="form-control" value="{{i}}"></td>
+                    </tr>
+                </form>
+            </table>
+            </br>
+            </br>
+            </br>
+            <div class="fixedPos down">
+                <button type="button" class="btn btn-success btn-block" ng-click="updateObject()">Update</button>
+                <button type="button" class="btn btn-danger btn-block" ng-click="deleteRow(choseObjectID)"><span class="glyphicon glyphicon-trash"></span>Delete</button>
+            </div>
+        </div>
 </body>
-<script src="./js/script.js"></script>
 <script src="./js/jquery-3.2.1.min.js"></script>
 <script src="./js/bootstrap.min.js"></script>
 <script src="./js/angular.min.js"></script>
+<script src="./js/script.js"></script>
 <script>
     var app = angular.module("tableApp", []);
     app.config(['$qProvider', function ($qProvider) {
@@ -83,30 +111,95 @@
                 $scope.table = table
                 choseTable = name
                 $scope.choseTable = choseTable
+                ChoseObject = {}
+                $scope.choseObject = ChoseObject
+                $scope.choseObjectID = undefined;
+                openPage("main-table")
 
             })
         }
-        $scope.DeleteRow = function (index) {
+        $scope.setObject = function (index) {
             if (choseTable != "") {
-                var obj=$scope.table[index]
-                var id;
-                for(var i=0;i<Objects.length;i++){
-                    if(Objects[i] == "id"){
-                        id=obj[i]
-                        break;
+                var obj = $scope.table[index]
+                console.log(obj)
+                ChoseObject = obj
+                var choseID;
+                $scope.choseObject = ChoseObject
+                for (var i = 0; i < $scope.columns.length; i++) {
+                    if ($scope.columns[i] == "ID") {
+                        choseID = obj[i]
                     }
                 }
-                $http.delete("http://localhost:8080/delete/" + $scope.choseTable + "/" +id).success(data, status){
+                $scope.choseObjectID = choseID;
+                openPage('objectEdit')
+            }
+        }
+        $scope.updateObject = function () {
+            if (choseTable != "") {
+                if ($scope.choseObject != {}) {
+                    d = {};
+                    var formsval = {};
+                    for (var i = 0; i < $scope.columns.length; i++) {
+                        formsval[$scope.columns[i]] = document.getElementById($scope.columns[i] + 'update').value
+                    }
+                    if (formsval["ID"] != $scope.choseObjectID) {
+                        alert("you cant change id")
+                        document.getElementById("IDupdate").value = $scope.choseObjectID
+                    } else {
+                        $.ajax({
+                            url: "http://localhost:8080/tables/" + choseTable,
+                            type: "POST",
+                            data: formsval,
+                            success: function (data) {
+                                alert(data)
+                            }
+                        })
 
+                        console.log("make update", formsval)
+                    }
+                } else {
+                    alert("select object first")
                 }
             }
         }
+        $scope.deleteRow = function (id) {
+            if (choseTable != "" && id != undefined || id != null) {
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost:8080/delete/" + choseTable,
+                    data: { 'ID': id },
+                    success: function (data) {
+                        $scope.loadTable(choseTable)
+                        $http.get("http://localhost:8080/tables").then(function successCallback(response) {
+                            //console.log(response.data)
+                            var tables = response.data
+                            $scope.tables = tables
+                            $scope.numTables = tables.length
+                            $scope.choseTable = choseTable
+                            $scope.choseObject = {}
+                            $scope.choseObjectID = undefined
+                        });
+                        openPage("main-table")
+                    }
+                })
+            } else {
+                alert("select table and object first")
+            }
+        }
+
         $http.get("http://localhost:8080/tables").then(function successCallback(response) {
-            //console.log(response.data)
-            var tables = response.data
-            $scope.tables = tables
-            $scope.numTables = tables.length
-            $scope.choseTable = choseTable
+            console.log(response.data)
+            if (response.data != null) {
+                var tables = response.data
+                $scope.tables = tables
+                $scope.numTables = tables.length
+                $scope.choseTable = choseTable
+            } else {
+                var tables = null
+                $scope.tables = null
+                $scope.numTables = 0
+                $scope.choseTable = null
+            }
         });
 
     });

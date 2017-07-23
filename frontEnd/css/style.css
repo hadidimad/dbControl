@@ -1,1 +1,9 @@
-/*background-color:#222;border-color:#080808*/
+.fixedPos{
+    position: fixed;
+}
+.down{
+    bottom: 10px;
+    right:10px;
+}
+
+
